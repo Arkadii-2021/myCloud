@@ -87,6 +87,9 @@ class FilesListFolder(generics.ListCreateAPIView):
     queryset = File.objects.all()
     serializer_class = FileSerializer
 
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
     def get_queryset(self, *args, **kwargs):
         req_user_name = User.objects.get(username=self.request.user)
         logging.info(f'Обзор списка файлов пользователем: [{req_user_name}]')
@@ -96,6 +99,22 @@ class FilesListFolder(generics.ListCreateAPIView):
         req_user_name = User.objects.get(username=self.request.user)
         instance = User.objects.get(username=req_user_name)
         return self.create(request, *args, **kwargs)
+
+
+class AuthUser(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+    authentication_classes = (BasicAuthentication, SessionAuthentication,)
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def get(self, request, *args, **kwargs):
+        req_user_name = User.objects.get(username=self.request.user)
+        if req_user_name:
+            logging.info(f'Авторизовался пользователь под ником: {req_user_name}')
+            return Response({"auth": True, "userInfo": {"admin": req_user_name.is_superuser,
+                                                        "name": req_user_name.username,
+                                                        "email": req_user_name.email,
+                                                        "lastLogin": req_user_name.last_login}})
 
 
 class FileNullFolderApiView(generics.ListCreateAPIView):

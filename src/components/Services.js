@@ -2,12 +2,18 @@ import React from 'react';
 import { useState } from "react";
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Link, useNavigate } from "react-router-dom"
+import { ToastContainer, toast } from 'react-toastify';
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { newList } from "../slices/listSlice";
+import { newUser } from "../slices/loginSlice";
+import { newInfo } from "../slices/infoSlice";
 
 
 export default function Services() {
 	axios.defaults.xsrfCookieName = 'csrftoken';
 	axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+	const dispatch = useDispatch();
 	const [userData, setUserData] = useState({user: "", password: ""});
     const [error, setError] = useState('');
 	const csrftoken = Cookies.get('csrftoken');
@@ -23,27 +29,34 @@ export default function Services() {
 	const loginData = (evt) => {
 	  evt.preventDefault();
 	  setIsLoading(true);
-	  axios.get(`http://127.0.0.1:8000/folder/list/`, 
+	  axios.get(`http://127.0.0.1:8000/login/`, 
 		{
 		  auth: {
 			username: userData.user,
 			password: userData.password,
-		}})
+		},
+		  headers: { "Content-Type": "application/json" }
+		})
 		  .then(response => {
 			setError('');
 			setState(response.data.results);
-			window.localStorage.setItem('responseDataResults', JSON.stringify(response.data.results));
+			//dispatch(newList(response.data.results));			
+			dispatch(newUser(userData));			
+			dispatch(newInfo(response.data));	
+			localStorage.setItem('newUser', JSON.stringify(userData));
+			localStorage.setItem('newInfo', JSON.stringify(response.data));
 			setIsLoading(false);
-			nav("/list");
+			toast.success("Успешный вход");
+			nav("/dashboard");
 		})
 		  .catch(error => {
 			setError(error.response.data.message);
+			toast.error("Ошибка входа! " + error.response.data.detail);
 			console.log(error) });
 		};
 
 	return (
     <div> 
-		<h1>MyCloud</h1>
 		<form onSubmit={ loginData }>
 			<div className="form_item">
 				<div className="new_date">
@@ -60,5 +73,4 @@ export default function Services() {
 		<h4 ><Link to="/register" className="title__new_user">Регистрация нового пользователя</Link></h4>
     </div>
   );
-	
 };

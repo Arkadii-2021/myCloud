@@ -21,7 +21,6 @@ export default function RegisterUser() {
 	const onSignupClick = (evt) => {
 	    evt.preventDefault();
 
-		console.log(evt)
 		const userData = {
 			username: newUserData.user,
 			password: newUserData.password,
@@ -34,13 +33,13 @@ export default function RegisterUser() {
 			.then(response => {
 				setError('');
 				setState(response.data.results);
-				toast("Пользователь добавлен!");
+				toast.success("Пользователь добавлен!");
 				nav("/");
 			})
 			.catch(error => {
 				setError(error.response.data.message);
 				console.log(error);
-				toast("Ошибка!");
+				toast.error("Ошибка!");
 				});
 				
 	console.log(userData)
@@ -49,7 +48,6 @@ export default function RegisterUser() {
 
 	return (
     <div> 
-	<h1>Регистрация</h1>
 		<form onSubmit={ onSignupClick }>
 			<div className="form_item">
 				<div className="new_date">

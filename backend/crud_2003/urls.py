@@ -23,7 +23,7 @@ from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.routers import DefaultRouter
 
 from files.views import UserViewSet, GroupViewSet, FileDetailAPIView, \
-    FileNullFolderApiView, FolderApiView, FoldersListApiView, FilesListFolder, ShareUrlAPIView, download_share
+    FileNullFolderApiView, FolderApiView, FoldersListApiView, FilesListFolder, ShareUrlAPIView, download_share, AuthUser
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -40,8 +40,8 @@ urlpatterns = [
     path('file/<int:pk>/', FileDetailAPIView.as_view()),
     path('file/<int:pk>/share/', ShareUrlAPIView.as_view()),
     path('file/download/', download_share),
-    path('api-token-auth/', obtain_auth_token),
     path('folder/list/', FilesListFolder.as_view()),
+    path('login/', AuthUser.as_view()),
     path('folder/<int:pk>/', FolderApiView.as_view()),
     path('folders/', FoldersListApiView.as_view()),
     path('root_folder/', FileNullFolderApiView.as_view()),

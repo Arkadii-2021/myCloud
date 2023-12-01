@@ -2,53 +2,60 @@ import { ToastContainer, toast } from 'react-toastify';
 import React, { useRef, useState } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { useSelector } from "react-redux";
 
 	
 export default function FolderList() {
+  const fileList = useSelector(state => state.list);
+  const newLoginUser = useSelector(state => state.user);
+  
   const [file, setFile] = useState('');
   const [data, getFile] = useState({ name: "", path: "" });
+
   const [progress, setProgess] = useState(0);
-  
   const el = useRef();
   const csrftoken = Cookies.get('csrftoken');
+  const sessionID = Cookies.get('sessionid');
 
   const handleChange = (e) => {
     setProgess(0)
     const file = e.target.files[0];
     setFile(file);
-  }
+  };
 
   const uploadFile = () => {
 	axios.defaults.xsrfCookieName = 'csrftoken';
 	axios.defaults.xsrfHeaderName = 'X-CSRFToken';
-	axios.defaults.headers.post["Content-type"] = "multipart/form-data";
+
+	const headers = {
+	  'Content-Type': 'multipart/form-data'
+	};
+	
     const formData = new FormData();
     formData.append('file', file);
 	formData.append('user', 1);
 	formData.append('folder', 1);
-    axios.post('http://127.0.0.1:8000/folder/list/', formData, {
-		  auth: {
-			username: 123,
-			password: 123,
-		  }}, 
-	{
-      onUploadProgress: (ProgressEvent) => {
-        let progress = Math.round(
-          ProgressEvent.loaded / ProgressEvent.total * 100
-        ) + '%';
-        setProgess(progress);
-      }
-    }).then(res => {
-      console.log(res);
-      getFile({
-        name: res.data.name,
-        path: 'http://127.0.0.1:8000/' + res.data.path
-      })
-    }).catch(err => console.log(err))
-	console.log(file);
-  }
+    axios.post("http://127.0.0.1:8000/folder/list/", formData, {
+		  auth: {username: newLoginUser['value'].user, password: newLoginUser['value'].password},
+		  headers: headers,
+		  credentials: 'include', 
+		  onUploadProgress: (ProgressEvent) => {
+			let progress = Math.round(
+			  ProgressEvent.loaded / ProgressEvent.total * 100
+			) + '%';
+			setProgess(progress);
+		  }
+		  }).then(res => {
+		  console.log(res);
+		  getFile({
+			name: res.data.name,
+			path: 'http://127.0.0.1:8000/' + res.data.path
+		  })
+		  }).catch(err => console.log(err))
+		  console.log(file);
+	  }
   
-	const state = JSON.parse(window.localStorage.getItem('responseDataResults'));
+	const state = fileList.value;
 
 	return (
 		<>
