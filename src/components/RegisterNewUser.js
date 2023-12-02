@@ -38,8 +38,8 @@ export default function RegisterUser() {
 			})
 			.catch(error => {
 				setError(error.response.data.message);
+				toast.error(`Ошибка!. ${JSON.parse(error.request.response).username[0]}`);
 				console.log(error);
-				toast.error("Ошибка!");
 				});
 				
 	console.log(userData)

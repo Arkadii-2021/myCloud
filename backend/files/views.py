@@ -1,7 +1,8 @@
 import os
 import logging
 import urllib
-
+import datetime
+from django.utils import timezone
 import uuid
 from django.contrib.auth.hashers import make_password
 from rest_framework import generics, viewsets, permissions, status
@@ -109,6 +110,12 @@ class AuthUser(generics.ListAPIView):
 
     def get(self, request, *args, **kwargs):
         req_user_name = User.objects.get(username=self.request.user)
+        timezone.make_aware(datetime.datetime.now(),
+                            timezone=timezone.get_current_timezone())
+        req_user_name.last_login = timezone.make_aware(datetime.datetime.now(),
+                                                       timezone=timezone.get_current_timezone())
+
+        req_user_name.save()
         if req_user_name:
             logging.info(f'Авторизовался пользователь под ником: {req_user_name}')
             return Response({"auth": True, "userInfo": {"admin": req_user_name.is_superuser,

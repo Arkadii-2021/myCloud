@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 export default function Dashboard() {
 	axios.defaults.xsrfCookieName = 'csrftoken';
 	axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+	//const dispatch = useDispatch();
 	const authUserInfo = useSelector(state => state.userInfo);
 	const [userData, setUserData] = useState({user: "", password: ""});
     const [error, setError] = useState('');
@@ -44,7 +45,6 @@ export default function Dashboard() {
 		
 		const { userInfo: {admin, name, email, lastLogin} } = authUserInfo['allInfoUser'];
 		const date = new Date(lastLogin);
-	
 		
 	return (
 		<div>

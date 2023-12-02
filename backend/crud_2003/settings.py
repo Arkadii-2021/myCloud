@@ -138,7 +138,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:3000"
+    "http://127.0.0.1:3000",
+    "http://localhost:3000"
 ]
 CORS_ALLOW_CREDENTIALS: True
 CORS_ORIGIN_ALLOW_ALL = True
@@ -148,9 +149,9 @@ CORS_ALLOW_HEADERS = ('content-disposition', 'accept-encoding',
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "ru"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Novosibirsk"
 
 USE_I18N = True
 

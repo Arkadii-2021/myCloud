@@ -3,41 +3,69 @@ import React, { useRef, useState } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useSelector } from "react-redux";
+import { newList } from "../slices/listSlice";
+import { useDispatch } from "react-redux";
+import { useEffect } from 'react';
 
 	
 export default function FolderList() {
   const fileList = useSelector(state => state.list);
   const newLoginUser = useSelector(state => state.user);
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('');
+  const [state, setState] = useState();
+  const dispatch = useDispatch();
   
+  // для хранения загруженного файла
   const [file, setFile] = useState('');
+  
+  // для хранения ответа от бекенда
   const [data, getFile] = useState({ name: "", path: "" });
 
-  const [progress, setProgess] = useState(0);
-  const el = useRef();
+  const [progress, setProgess] = useState(0); // progessbar
+  const el = useRef(); // для доступа к инпуту
+  
+  axios.defaults.xsrfCookieName = 'csrftoken';
+  axios.defaults.xsrfHeaderName = 'X-CSRFToken';
   const csrftoken = Cookies.get('csrftoken');
-  const sessionID = Cookies.get('sessionid');
+
+  setIsLoading(true);
+	
+  useEffect(() => {
+	axios.get(`http://127.0.0.1:8000/folder/list/`, 
+	  {
+		auth: {username: newLoginUser['value'].user, password: newLoginUser['value'].password},
+		headers: { "Content-Type": "application/json" }
+	  })
+		.then(response => {
+	      setError('');
+		  setState(response.data.results);
+	      dispatch(newList(response.data.results));			
+		  setIsLoading(false);
+		})
+		  .catch(error => {
+			setError(error.response.data.message);
+			toast.error("Ошибка входа! " + error.response.data.detail);
+			console.log(error) });
+  }, []);
 
   const handleChange = (e) => {
     setProgess(0)
-    const file = e.target.files[0];
-    setFile(file);
+    const file = e.target.files[0]; // доступ к файлу
+    setFile(file); // сохранение файла
   };
 
   const uploadFile = () => {
 	axios.defaults.xsrfCookieName = 'csrftoken';
 	axios.defaults.xsrfHeaderName = 'X-CSRFToken';
-
-	const headers = {
-	  'Content-Type': 'multipart/form-data'
-	};
 	
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', file); // добавление файла
 	formData.append('user', 1);
 	formData.append('folder', 1);
     axios.post("http://127.0.0.1:8000/folder/list/", formData, {
 		  auth: {username: newLoginUser['value'].user, password: newLoginUser['value'].password},
-		  headers: headers,
+		  headers: {'Content-Type': 'multipart/form-data'},
 		  credentials: 'include', 
 		  onUploadProgress: (ProgressEvent) => {
 			let progress = Math.round(
@@ -53,9 +81,9 @@ export default function FolderList() {
 		  })
 		  }).catch(err => console.log(err))
 		  console.log(file);
-	  }
+	}
   
-	const state = fileList.value;
+	const fileListResult = fileList.value;
 
 	return (
 		<>
@@ -76,7 +104,7 @@ export default function FolderList() {
 			  <div className="tbl-content">
 				<table cellPadding="0" cellSpacing="0" border="0">
 				  <tbody>
-				  {state.map(filename => 
+				  {fileListResult.map(filename => 
 					  <tr key={filename.id}>
 						  <td><a href={filename.file} className="list-group-item" >{filename.label}</a></td>
 						  <td><span className="list-group-item" >{filename.filesize}</span></td>
@@ -104,3 +132,5 @@ export default function FolderList() {
 		</>
 	)
 }
+
+
