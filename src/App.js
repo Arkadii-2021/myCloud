@@ -4,7 +4,6 @@ import Services from "./components/Services";
 import RegisterUser from "./components/RegisterNewUser";
 import FolderList from "./components/FolderList";
 import Dashboard from "./components/Dashboard";
-import Logout from "./components/Logout";
 import { PrivateRoute } from "./utils/PrivateRoute";
 import { ToastContainer } from "react-toastify";
 import { useSelector } from "react-redux";

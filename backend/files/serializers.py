@@ -47,6 +47,8 @@ class FileDetailSerializer(serializers.ModelSerializer):
     uuid = serializers.UUIDField(format="hex", read_only=True)
     date = serializers.DateTimeField(read_only=True, format='%d-%m-%Y %H:%M')
     user = serializers.CharField(max_length=100, read_only=True)
+    share = serializers.UUIDField(read_only=True)
+    url = serializers.URLField(read_only=True)
 
     class Meta:
         model = File

@@ -24,6 +24,14 @@ export default function Services() {
     const onChangeUser = ({target}) => {
 	    const {name, value} = target;
 	    setUserData(prevForm => ({...prevForm, [name]: value}));
+		console.log(name, value)
+		//let patternLogin = new RegExp(/^([A-Za-z]{1,})+(\d){1,}([a-zA-Z1-9_])*/g);
+		//let patternEmail = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/g);
+		
+		let patternPassword = new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/g);
+		if (name === "password" && patternPassword.test(value)) {
+			console.log("OK")
+		}
     };
   
     const nav = useNavigate();
@@ -41,7 +49,6 @@ export default function Services() {
 		  .then(response => {
 			setError('');
 			setState(response.data.results);
-			//dispatch(newList(response.data.results));			
 			dispatch(newUser(userData));			
 			dispatch(newInfo(response.data));	
 			localStorage.setItem('newUser', JSON.stringify(userData));
@@ -74,7 +81,7 @@ function LogoutClick() {
 	return (
 		<>
 			<h4>Вы уже зашли в систему</h4>
-			<button className="btn_ok" onClick={clearDataLogin}>Выйти</button>
+			<button className="btn-new" onClick={clearDataLogin}>Выйти</button>
 		</>
 	)
 };
@@ -92,16 +99,13 @@ function FormLogin({loginData, onChangeUser}) {
 						<label className="title_items" htmlFor="distance">Пароль</label>
 						<input type="password" className="field_to_new_item" id='password' name='password' placeholder="Enter password" onChange={onChangeUser} />
 					</div>
-				<button className="btn_ok" type="submit">Login</button>
+				<button className="btn-login" type="submit">Login</button>
 				</div>
 			</form> 
 			<h4 ><Link to="/register" className="title__new_user">Регистрация нового пользователя</Link></h4>
 		</>
 	)
 }
-
-
-
 
 //{!isLoading && state && <FolderList isLoading={isLoading} state={state} />}
 //{headers: {'X-CSRFToken': csrftoken}}

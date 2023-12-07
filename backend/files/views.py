@@ -34,23 +34,29 @@ class FileDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     def put(self, request, *args, **kwargs):
         old_label_file = File.objects.get(id=self.kwargs['pk'])
-        logging.info(f"Имя файла: {old_label_file} обновлено на:")
-        print(f"Имя файла: {old_label_file} обновлено на:")
+        path_to_file = old_label_file.file
+        filename_in_field = str(path_to_file).split('/')[-1]
         self.update(request, *args, **kwargs)
         instance = File.objects.get(id=self.kwargs['pk'])
         file_dir = f"{os.getcwd()}\\files\\storages"
         ids = request.user.id
-        os.rename(f'{file_dir}\\{ids}\\{old_label_file}', f'{file_dir}\\{ids}\\{instance}')
+        os.rename(f'{file_dir}\\{ids}\\{filename_in_field}', f'{file_dir}\\{ids}\\{instance}')
         instance.file.name = f"files/storages/{ids}/{request.data['label']}"
         instance.save()
+        logging.info(f"Имя файла: [{filename_in_field}] обновлено на: [{request.data['label']}]")
+        print(f"Имя файла: [{filename_in_field}] обновлено на: [{request.data['label']}]")
         return self.update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
         label_file = File.objects.get(id=self.kwargs['pk'])
-        file_dir = os.getcwd() + '/files/storages'
-        os.remove(str(file_dir) + '/' + str(label_file))
-        print('Удалён файл: ' + str(File.objects.get(id=self.kwargs['pk'])))
-        logging.info('Удалён файл: ' + str(File.objects.get(id=self.kwargs['pk'])))
+        path_to_file = label_file.file
+        filename_in_field = str(path_to_file).split('/')[-1]
+        ids = request.user.id
+        file_dir = os.getcwd() + '\\files\\storages\\' + str(ids)
+        File.objects.filter(id=self.kwargs['pk']).delete()
+        os.remove(str(file_dir) + '\\' + str(filename_in_field))
+        print('Удалён файл: ' + str(filename_in_field))
+        logging.info('Удалён файл: ' + str(filename_in_field))
         return self.destroy(request, *args, **kwargs)
 
 
@@ -71,6 +77,21 @@ class ShareUrlAPIView(generics.RetrieveUpdateAPIView):
         print(f"Ссылка создана: {request.build_absolute_uri('/')}file/download/?share={instance.share}")
         instance.url = f"{request.build_absolute_uri('/')}file/download/?share={instance.share}"
         instance.save()
+        return self.update(request, *args, **kwargs)
+
+
+class RemoveShareUrlAPIView(generics.RetrieveUpdateAPIView):
+    serializer_class = FileShareUrlSerializer
+    authentication_classes = (BasicAuthentication, SessionAuthentication,)
+    queryset = File.objects.all()
+
+    def put(self, request, *args, **kwargs):
+        instance = File.objects.get(id=self.kwargs['pk'])
+        instance.share = None
+        instance.url = None
+        instance.save()
+        logging.info(f"Ссылка на файл [{instance}] удалена.")
+        print(f"Ссылка на файл [{instance}] удалена.")
         return self.update(request, *args, **kwargs)
 
 
@@ -121,7 +142,8 @@ class AuthUser(generics.ListAPIView):
             return Response({"auth": True, "userInfo": {"admin": req_user_name.is_superuser,
                                                         "name": req_user_name.username,
                                                         "email": req_user_name.email,
-                                                        "lastLogin": req_user_name.last_login}})
+                                                        "lastLogin": req_user_name.last_login,
+                                                        "userId": request.user.id}})
 
 
 class FileNullFolderApiView(generics.ListCreateAPIView):

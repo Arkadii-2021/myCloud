@@ -66,7 +66,7 @@ export default function RegisterUser() {
 				    <label className="title_items" htmlFor="is_superuser">Админ</label>
 					<input type="checkbox" className="field_to_new_checkbox" id='is_superuser' name="is_superuser" onChange={() => setChecked(!checked)} />
 				</div>
-			<button className="btn_ok" type="submit">Добавить</button>
+			<button className="btn-new" type="submit">Добавить</button>
 			<ToastContainer />
 			</div>
 		</form>
