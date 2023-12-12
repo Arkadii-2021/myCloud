@@ -11,6 +11,8 @@ import { newInfo } from "../slices/infoSlice";
 
 
 export default function Services() {
+	const currentPath = window.location.href;
+	console.log(currentPath);
 	axios.defaults.xsrfCookieName = 'csrftoken';
 	axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 	const dispatch = useDispatch();
@@ -24,14 +26,6 @@ export default function Services() {
     const onChangeUser = ({target}) => {
 	    const {name, value} = target;
 	    setUserData(prevForm => ({...prevForm, [name]: value}));
-		console.log(name, value)
-		//let patternLogin = new RegExp(/^([A-Za-z]{1,})+(\d){1,}([a-zA-Z1-9_])*/g);
-		//let patternEmail = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/g);
-		
-		let patternPassword = new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/g);
-		if (name === "password" && patternPassword.test(value)) {
-			console.log("OK")
-		}
     };
   
     const nav = useNavigate();
@@ -106,6 +100,3 @@ function FormLogin({loginData, onChangeUser}) {
 		</>
 	)
 }
-
-//{!isLoading && state && <FolderList isLoading={isLoading} state={state} />}
-//{headers: {'X-CSRFToken': csrftoken}}

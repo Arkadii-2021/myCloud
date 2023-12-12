@@ -15,7 +15,7 @@ from djoser.conf import settings
 from djoser.serializers import TokenCreateSerializer
 
 user = get_user_model()
-logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="a",
+logging.basicConfig(level=logging.INFO, filename="my_cloud.log", filemode="a",
                     format="%(asctime)s %(levelname)s %(message)s")
 
 
@@ -130,6 +130,12 @@ class UserSerializer(serializers.ModelSerializer):
                   'is_superuser', 'is_active', ]
 
 
+class UserChanger(serializers.ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ['is_superuser']
+
+
 class CustomTokenCreateSerializer(TokenCreateSerializer):
     def validate(self, attrs):
         password = attrs.get("password")
@@ -141,6 +147,6 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
             self.user = User.objects.filter(**params).first()
             if self.user and not self.user.check_password(password):
                 self.fail("invalid_credentials")
-        if self.user: # and self.user.is_active:
+        if self.user:
             return attrs
         self.fail("invalid_credentials")

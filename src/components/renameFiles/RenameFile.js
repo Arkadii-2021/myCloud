@@ -9,7 +9,7 @@ export default function RenameFile({ newLoginUser, newFileListP, ids, folderId, 
 	
 	return (
 		<>
-			<button onClick={() => setModal(true)} className="btn-new" >&#128427;</button>
+			<button onClick={() => setModal(true)} className="btn-new" >&#9998;</button>
 			<Modal
                 visible={isModal}
                 title="Переименовать файл"

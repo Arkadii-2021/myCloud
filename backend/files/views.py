@@ -1,6 +1,5 @@
 import os
 import logging
-import urllib
 import datetime
 from django.utils import timezone
 import uuid
@@ -12,13 +11,13 @@ from rest_framework.response import Response
 
 from .models import File, Folder
 from .serializers import FileSerializer, UserSerializer, GroupSerializer, FileDetailSerializer, FolderSerializer, \
-    FileShareUrlSerializer
+    FileShareUrlSerializer, UserChanger
 from django.contrib.auth.models import User, Group
-from django.http import HttpResponse, Http404, FileResponse
+from django.http import FileResponse
 from rest_framework.authtoken.models import Token
 from django.conf import settings
 
-logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="a",
+logging.basicConfig(level=logging.INFO, filename="my_cloud.log", filemode="a",
                     format="%(asctime)s %(levelname)s %(message)s")
 
 
@@ -115,6 +114,7 @@ class FilesListFolder(generics.ListCreateAPIView):
     def get_queryset(self, *args, **kwargs):
         req_user_name = User.objects.get(username=self.request.user)
         logging.info(f'Обзор списка файлов пользователем: [{req_user_name}]')
+        print(f'Обзор списка файлов пользователем: "{req_user_name}"')
         return self.queryset.filter(user=req_user_name)
 
     def post(self, request, *args, **kwargs):
@@ -137,13 +137,58 @@ class AuthUser(generics.ListAPIView):
                                                        timezone=timezone.get_current_timezone())
 
         req_user_name.save()
+        all_users = [users for users in User.objects.values("id",
+                                                            "username",
+                                                            "last_login",
+                                                            "email",
+                                                            "is_superuser",
+                                                            "is_active",
+                                                            "first_name",
+                                                            "last_name", )]
+
+        is_admin_user = {"auth": True, "userInfo": {"admin": req_user_name.is_superuser,
+                                                    "name": req_user_name.username,
+                                                    "firstName": req_user_name.first_name,
+                                                    "lastName": req_user_name.last_name,
+                                                    "email": req_user_name.email,
+                                                    "lastLogin": req_user_name.last_login,
+                                                    "userId": request.user.id},
+                         "allUsers": ""}
+
         if req_user_name:
             logging.info(f'Авторизовался пользователь под ником: {req_user_name}')
-            return Response({"auth": True, "userInfo": {"admin": req_user_name.is_superuser,
-                                                        "name": req_user_name.username,
-                                                        "email": req_user_name.email,
-                                                        "lastLogin": req_user_name.last_login,
-                                                        "userId": request.user.id}})
+            print(f'Авторизовался пользователь под ником: {req_user_name}')
+            if req_user_name.is_superuser:
+                is_admin_user['allUsers'] = all_users
+                return Response(is_admin_user)
+            else:
+                is_admin_user['allUsers'] = ''
+                return Response(is_admin_user)
+
+
+class UserAllInfo(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+    authentication_classes = (BasicAuthentication, SessionAuthentication,)
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def get(self, request, *args, **kwargs):
+        all_users = [users for users in User.objects.values("id",
+                                                            "username",
+                                                            "last_login",
+                                                            "email",
+                                                            "is_superuser",
+                                                            "is_active",
+                                                            "first_name",
+                                                            "last_name", )]
+        return Response({"allUsers": all_users})
+
+
+class UpdateUserParams(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+    authentication_classes = (BasicAuthentication, SessionAuthentication,)
+    queryset = User.objects.all()
+    serializer_class = UserChanger
 
 
 class FileNullFolderApiView(generics.ListCreateAPIView):

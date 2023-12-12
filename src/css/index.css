@@ -3,6 +3,20 @@ body {
   margin-left: 25px;
 }
 
+.file-info {
+  display: flex;
+  align-items: center;
+  margin-top: auto;
+}
+
+.info{
+  color: #d96e00;
+  font-size: 24px;
+  margin-right: 12px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
 ul {
   font-size: 18px;
 }

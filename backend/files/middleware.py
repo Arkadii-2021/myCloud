@@ -1,8 +1,7 @@
 import datetime
 import logging
-from django.contrib.messages.middleware import MessageMiddleware
 
-logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="a",
+logging.basicConfig(level=logging.INFO, filename="my_cloud.log", filemode="a",
                     format="%(asctime)s %(levelname)s %(message)s")
 
 
