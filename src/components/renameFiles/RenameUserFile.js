@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import ModalContent from "./ModalContent";
+import ModalUserContent from "./ModalUserContent";
 import { Modal } from "./Modal";
 
 
-export default function RenameFile({ newLoginUser, newFileListP, ids, folderId, isfileName, isfileComment, userNameList }) {
+export default function RenameUserFile({ newLoginUser, newFileListP, ids, folderId, isfileName, isfileComment, userNameList }) {
 	const [isModal, setModal] = useState(false)
     const onClose = () => setModal(false)
 	
@@ -13,7 +13,7 @@ export default function RenameFile({ newLoginUser, newFileListP, ids, folderId, 
 			<Modal
                 visible={isModal}
                 title="Переименовать файл"
-                content={ <ModalContent isfileName={isfileName} isfileComment={isfileComment} ids={ids} folderId={folderId} newLoginUser={newLoginUser} newFileListP={newFileListP} setModal={setModal} userNameList={userNameList} /> }
+                content={ <ModalUserContent isfileName={isfileName} isfileComment={isfileComment} ids={ids} folderId={folderId} newLoginUser={newLoginUser} newFileListP={newFileListP} setModal={setModal} userNameList={userNameList} /> }
                 footer={<button className="btn-new" onClick={onClose}>Закрыть</button>}
                 onClose={onClose}
             />

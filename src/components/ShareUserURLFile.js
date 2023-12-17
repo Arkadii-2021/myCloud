@@ -2,10 +2,10 @@ import { toast } from 'react-toastify';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useDispatch } from "react-redux";
-import { newList } from "../slices/listSlice";
+import { newUserList } from "../slices/userlistSlice";
 
 
-export default function ShareURLFile({newLoginUser, ids}) {
+export default function ShareUserURLFile({newLoginUser, ids, loc}) {
 	const dispatch = useDispatch();
 	const [error, setError] = useState('');
 	
@@ -17,7 +17,7 @@ export default function ShareURLFile({newLoginUser, ids}) {
 		  })
 			.then(response => {
 			  setError('');
-			  updatePageListFiles();
+			  updatePageListFiles(loc);
 			  toast.success("Общая ссылка на файл создана");
 		  })
 			.catch(error => {
@@ -28,15 +28,15 @@ export default function ShareURLFile({newLoginUser, ids}) {
     
 	let pageNumber = localStorage.getItem('pageNum');
 		
-    const updatePageListFiles = () => {
-			axios.get(`${process.env.REACT_APP_SERVER_URL}folder/list/${pageNumber}`, 
+    const updatePageListFiles = (loc) => {
+			axios.get(`${process.env.REACT_APP_SERVER_URL}folder/user/list/${pageNumber}&username=${loc}`, 
 		  {
 			auth: {username: newLoginUser['value'].user, password: newLoginUser['value'].password},
 			headers: { "Content-Type": "application/json" }
 		  })
 			.then(response => {
 			  setError('');
-			  dispatch(newList(response.data.results));
+			  dispatch(newUserList(response.data.results));	
 		  })
 			.catch(error => {
 			  setError(error.response.data.message);

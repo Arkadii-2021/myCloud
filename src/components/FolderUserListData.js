@@ -4,36 +4,38 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useSelector, useDispatch } from "react-redux";
 import { newList } from "../slices/listSlice";
-import PaginationList from "./PaginationList";
-import RemoveFile from "./RemoveFile";
-import ShareURLFile from "./ShareURLFile";
-import CopyShareURLFile from "./CopyShareURLFile";
-import RenameFile from "./renameFiles/RenameFile";
-import FileInfoDetail from "./fileInfo/FileInfoDetail";
+import { newUserList } from "../slices/userlistSlice";
+import PaginationUserList from "./PaginationUserList";
+import RemoveUserFile from "./RemoveUserFile";
+import ShareUserURLFile from "./ShareUserURLFile";
+import CopyShareUserURLFile from "./CopyShareUserURLFile";
+import RenameUserFile from "./renameFiles/RenameUserFile";
 import fileSizeFormat from "../utils/fileSizeFormat";
+import { useLocation } from "react-router-dom";
+import FileInfoDetail from "./fileUserInfo/FileInfoDetail";
 
 
-export default function FolderList() {
-  const fileList = useSelector(state => state.list);
+export default function FolderUserListData() {
+  const fileList = useSelector(state => state.userlist);
   const newLoginUser = useSelector(state => state.user);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [newFileList, setNewFileList] = useState();
-  const [countFileUser, setCountFilesUser] = useState();
   const dispatch = useDispatch();
+  const loc = useLocation();
   const [file, setFile] = useState('');
   const [data, getFile] = useState({ name: "", path: "" });
   const [progress, setProgess] = useState(0);
   const el = useRef();
+  const imageFileType = ['jpg', 'jpeg', 'png'];
   
   axios.defaults.xsrfCookieName = 'csrftoken';
   axios.defaults.xsrfHeaderName = 'X-CSRFToken';
   const csrftoken = Cookies.get('csrftoken');
-  const imageFileType = ['jpg', 'jpeg', 'png'];
-  
+
   useEffect(() => {
 	setIsLoading(true);
-	axios.get(`${process.env.REACT_APP_SERVER_URL}folder/list/`, 
+	axios.get(`${process.env.REACT_APP_SERVER_URL}folder/user/list/?username=${loc.state.usrNamelist}`, 
 	  {
 		auth: {username: newLoginUser['value'].user, password: newLoginUser['value'].password},
 		headers: { "Content-Type": "application/json" }
@@ -41,25 +43,13 @@ export default function FolderList() {
 		.then(response => {
 	      setError('');
 		  setNewFileList(response.data);
-	      dispatch(newList(response.data.results));	
+	      dispatch(newUserList(response.data.results));	
 		  localStorage.setItem('pageNum', '?page=1');
 		  setIsLoading(false);
 		})
 		  .catch(error => {
 			setError(error.response.data.message);
 			toast.error("Ошибка входа! " + error.response.data.detail);
-			console.log(error) });
-  }, []);
-  
-  useEffect(() => {
-		axios.get(`${process.env.REACT_APP_SERVER_URL}folder/list/count/`, 
-		  {auth: {username: newLoginUser['value'].user, password: newLoginUser['value'].password},
-		  headers: { "Content-Type": "application/json" }
-	    })
-		  .then(response => {
-			setCountFilesUser(response.data.count_files);
-		})
-		  .catch(error => {
 			console.log(error) });
   }, []);
   
@@ -76,7 +66,7 @@ export default function FolderList() {
     formData.append('file', file);
 	formData.append('user', 1);
 	formData.append('folder', 1);
-    axios.post(`${process.env.REACT_APP_SERVER_URL}folder/list/`, formData, {
+    axios.post(`${process.env.REACT_APP_SERVER_URL}folder/user/list/?username=${loc.state.usrNamelist}`, formData, {
 		  auth: {username: newLoginUser['value'].user, password: newLoginUser['value'].password},
 		  headers: {'Content-Type': 'multipart/form-data'},
 		  credentials: 'include', 
@@ -89,7 +79,6 @@ export default function FolderList() {
 		  }).then(res => {
 		  console.log(res);
 		  updatePageListFiles();
-		  countFilesP();
 		  getFile({
 			name: res.data.label,
 			path: res.data.file
@@ -104,7 +93,7 @@ export default function FolderList() {
     let pageNumber = localStorage.getItem('pageNum');
 	
 	const updatePageListFiles = () => {
-			axios.get(`${process.env.REACT_APP_SERVER_URL}folder/list/${pageNumber}`, 
+			axios.get(`${process.env.REACT_APP_SERVER_URL}folder/user/list/${pageNumber}&username=${loc.state.usrNamelist}`, 
 		  {
 			auth: {username: newLoginUser['value'].user, password: newLoginUser['value'].password},
 			headers: { "Content-Type": "application/json" }
@@ -112,31 +101,19 @@ export default function FolderList() {
 			.then(response => {
 			  setError('');
 			  setNewFileList(response.data);
-			  dispatch(newList(response.data.results));
+			  dispatch(newUserList(response.data.results));	
 
 		  })
 			.catch(error => {
 			  setError(error.response.data.message);
 			  toast.error("Ошибка получения списка! " + error.response.data.detail);
 			  console.log(error) });
-	}	
-	
-	const countFilesP = () => {
-		axios.get(`${process.env.REACT_APP_SERVER_URL}folder/list/count/`, 
-		  {auth: {username: newLoginUser['value'].user, password: newLoginUser['value'].password},
-		  headers: { "Content-Type": "application/json" }
-	    })
-		  .then(response => {
-			setCountFilesUser(response.data.count_files);
-		})
-		  .catch(error => {
-			console.log(error) });
 	}
 	
 	const fileListResult = fileList.value;
 
 	return (
-		<> {newFileList && <h4>Количество файлов: {countFileUser}</h4>}
+		<>
 			<div className="tbl-header">
 				<table cellPadding="0" cellSpacing="0" border="0">
 				  <thead>
@@ -156,17 +133,17 @@ export default function FolderList() {
 				  <tbody>
 				  {fileListResult.map((filename, idx) => 
 					  <tr key={filename.id}>
-						  <td><div className="file-info"><FileInfoDetail idx={idx}/><a href={filename.file} className="list-group-item" >{filename.label}</a></div></td>
+						  <td><div className="file-info"><FileInfoDetail idx={idx} /><a href={filename.file} className="list-group-item" >{filename.label}</a></div></td>
 						  <td><span className="list-group-item" >{fileSizeFormat(filename.filesize)}</span></td>
-						  <td><span className="list-group-item" >{filename.url ? <CopyShareURLFile url={filename.url} ids={filename.id} newFileListP={newFileList}/> : <ShareURLFile ids={filename.id} newLoginUser={newLoginUser} newFileListP={newFileList} />}</span></td>
+						  <td><span className="list-group-item" >{filename.url ? <CopyShareUserURLFile url={filename.url} ids={filename.id} newFileListP={newFileList} loc={loc.state.usrNamelist} /> : <ShareUserURLFile ids={filename.id} newLoginUser={newLoginUser} newFileListP={newFileList} loc={loc.state.usrNamelist} />}</span></td>
 						  <td><span className="list-group-item" >{filename.comment}</span></td>
-						  <td><span className="list-group-item" >{newFileList ? <RenameFile newLoginUser={newLoginUser} newFileListP={newFileList} ids={filename.id} folderId={filename.folder} isfileName={filename.label} isfileComment={filename.comment} /> : null}</span></td>
-						  <td><span className="list-group-item" >{newFileList ? <RemoveFile newLoginUser={newLoginUser} newFileListP={newFileList} ids={filename.id} setCountFilesUser={setCountFilesUser} /> : null}</span></td>
+						  <td><span className="list-group-item" >{newFileList ? <RenameUserFile newLoginUser={newLoginUser} newFileListP={newFileList} ids={filename.id} folderId={filename.folder} isfileName={filename.label} isfileComment={filename.comment} userNameList={loc.state.usrNamelist} /> : null}</span></td>
+						  <td><span className="list-group-item" >{newFileList ? <RemoveUserFile newLoginUser={newLoginUser} newFileListP={newFileList} ids={filename.id} userNameList={loc.state.usrNamelist} /> : null}</span></td>
 					  </tr>)}
 				  </tbody>
 				</table>
 			  </div>
-			  {newFileList ? <PaginationList newLoginUser={newLoginUser} newFileListP={newFileList} /> : null}
+			  {newFileList ? <PaginationUserList newLoginUser={newLoginUser} newFileListP={newFileList} /> : null}
 
 			<h4 className="title__new_user">Загрузить новый файл</h4>
 			<div className="file-upload">
@@ -188,4 +165,9 @@ export default function FolderList() {
 		</>
 	)
 }
+
+
+
+
+
 

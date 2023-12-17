@@ -32,8 +32,26 @@ class FileSerializer(serializers.ModelSerializer):
         validated_data['label'] = validated_data.get('file')
         validated_data['user'] = self.context['request'].user
         logging.info(f"Загружен новый файл: {validated_data['file']} пользователем: {self.context['request'].user}")
-        print(f"Загружен новый файл: {validated_data['file']}")
-        print(self.context['request'].user.id)
+        print(f"Загружен новый файл: {validated_data['file']} пользователем: {self.context['request'].user}")
+        return File.objects.create(**validated_data)
+
+    class Meta:
+        model = File
+        fields = '__all__'
+
+
+class UserFileSerializer(serializers.ModelSerializer):
+    label = serializers.CharField(read_only=True)
+    date = serializers.DateTimeField(read_only=True, format='%d-%m-%Y %H:%M')
+    filesize = serializers.IntegerField(read_only=True)
+    share = serializers.UUIDField(read_only=True)
+    url = serializers.URLField(read_only=True)
+
+    def create(self, validated_data):
+        validated_data['label'] = validated_data.get('file')
+        validated_data['user'] = User.objects.get(username=self.context['request'].query_params['username'])
+        logging.info(f"Загружен новый файл: {validated_data['file']} пользователем: {self.context['request'].user}")
+        print(f"Загружен новый файл: {validated_data['file']} пользователем: {self.context['request'].user}")
         return File.objects.create(**validated_data)
 
     class Meta:
@@ -126,7 +144,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ['url', 'username', 'password', 'email', 'groups', 'last_login', 'is_staff',
+        fields = ['url', 'username', 'first_name', 'last_name', 'password', 'email', 'groups', 'last_login', 'is_staff',
                   'is_superuser', 'is_active', ]
 
 

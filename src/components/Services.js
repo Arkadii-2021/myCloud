@@ -1,24 +1,20 @@
 import React from 'react';
 import { useState } from "react";
 import axios from 'axios';
-import Cookies from 'js-cookie';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { newUser } from "../slices/loginSlice";
 import { newInfo } from "../slices/infoSlice";
 
 
 export default function Services() {
-	const currentPath = window.location.href;
-	console.log(currentPath);
 	axios.defaults.xsrfCookieName = 'csrftoken';
 	axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 	const dispatch = useDispatch();
 	const [userData, setUserData] = useState({user: "", password: ""});
     const [error, setError] = useState('');
-	const csrftoken = Cookies.get('csrftoken');
+	
 	const [state, setState] = useState();
 	const [isLoading, setIsLoading] = useState(false)
 	const isUserLogin = useSelector(state => state.userInfo);
@@ -32,7 +28,7 @@ export default function Services() {
 	const loginData = (evt) => {
 	  evt.preventDefault();
 	  setIsLoading(true);
-	  axios.get(`http://127.0.0.1:8000/login/`, 
+	  axios.get(`${process.env.REACT_APP_SERVER_URL}login/`, 
 		{
 		  auth: {
 			username: userData.user,

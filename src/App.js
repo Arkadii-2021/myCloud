@@ -7,6 +7,7 @@ import Dashboard from "./components/Dashboard";
 import { PrivateRoute } from "./utils/PrivateRoute";
 import { ToastContainer } from "react-toastify";
 import { useSelector } from "react-redux";
+import FolderUserListData from "./components/FolderUserListData";
 
 
 export default function App() {	
@@ -14,8 +15,7 @@ export default function App() {
         <>
 		<ToastContainer hideProgressBar={true} newestOnTop={true} />
 			<nav className="menu">
-				<NavLink to="/" className="menu__link">Вход</NavLink>
-
+				<NavLink to="/" className="menu__link">Вход / Выход из системы</NavLink>
 				<NavLink to="/dashboard" className="menu__link">Dashboard</NavLink>
 				<NavLink to="/list" className="menu__link">Список файлов</NavLink>
 			</nav>
@@ -25,6 +25,7 @@ export default function App() {
 				<Route element={<PrivateRoute />}>
 				    <Route path="/dashboard" element={<Dashboard />}/>	
 					<Route path="/list" element={<FolderList />}/>
+					<Route path="/userlist" element={<FolderUserListData />}/>
 				</Route>
 			</Routes>
 	    </>

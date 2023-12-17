@@ -3,6 +3,10 @@ body {
   margin-left: 25px;
 }
 
+img {
+  width: 250px;
+}
+
 .file-info {
   display: flex;
   align-items: center;
@@ -82,6 +86,11 @@ a.list-group-item:focus,a.list-group-item:hover,button.list-group-item:focus,but
   flex-wrap: wrap;
   align-items: center;
   width: 1200px;
+}
+
+.form_register_item {
+    display: flex;
+    align-items: center;
 }
 
 .form_file__item {
@@ -398,6 +407,7 @@ section{
 .btn-new {
   font-size: 16px;
   padding: 4px 8px;
+  cursor: pointer;
   margin-right: 14px;
   margin-top: 12px;
   border: none;
@@ -408,6 +418,21 @@ section{
 }
 
 .btn-new:hover {
+  box-shadow: 0 0 0 1px white, 0 0 0 2px #88ceff;
+}
+
+.btn-register {
+  font-size: 20px;
+  padding: 8px 18px;
+  margin-right: 14px;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  transition: .2s linear;
+  background: #4ab4ff;
+}
+
+.btn-register:hover {
   box-shadow: 0 0 0 1px white, 0 0 0 2px #88ceff;
 }
 
@@ -519,6 +544,7 @@ section{
     opacity: 1;
   }
 }
+
 @keyframes slide-in {
   from {
     transform: translateY(-150px);
@@ -526,4 +552,21 @@ section{
   to {
     transform: translateY(0);
   }
+}
+
+input:invalid {
+  border: 2px dashed red;
+}
+
+input:invalid:required {
+  border: 2px dashed red;
+}
+
+input:valid {
+  border: 2px solid black;
+}
+
+.important-border {
+  border: 2px solid #4ab4ff;
+  width: 990px;
 }

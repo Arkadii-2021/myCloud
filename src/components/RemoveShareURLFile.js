@@ -12,7 +12,7 @@ export default function RemoveShareURLFile({ url, ids }) {
 
 	
 	const handleDeleteClick = (e) => {
-		axios.put(`http://127.0.0.1:8000/file/${ids}/remove_share/`, 
+		axios.put(`${process.env.REACT_APP_SERVER_URL}file/${ids}/remove_share/`, 
 		  {
 			auth: {username: newLoginUser['value'].user, password: newLoginUser['value'].password},
 			headers: { "Content-Type": "application/json" }
@@ -31,7 +31,7 @@ export default function RemoveShareURLFile({ url, ids }) {
 	let pageNumber = localStorage.getItem('pageNum');
 	
 	const updatePageListFiles = () => {
-			axios.get(`http://127.0.0.1:8000/folder/list/${pageNumber}`, 
+			axios.get(`${process.env.REACT_APP_SERVER_URL}folder/list/${pageNumber}`, 
 		  {
 			auth: {username: newLoginUser['value'].user, password: newLoginUser['value'].password},
 			headers: { "Content-Type": "application/json" }

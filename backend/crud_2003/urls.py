@@ -17,14 +17,13 @@ Including another URLconf
 import os
 
 from django.contrib import admin
-from django.urls import path, include, re_path
-from rest_framework.authtoken.views import obtain_auth_token
+from django.urls import path, include
 
 from rest_framework.routers import DefaultRouter
 
 from files.views import UserViewSet, GroupViewSet, FileDetailAPIView, \
     FileNullFolderApiView, FolderApiView, FoldersListApiView, FilesListFolder, ShareUrlAPIView, download_share, \
-    AuthUser, RemoveShareUrlAPIView, UpdateUserParams, UserAllInfo
+    AuthUser, RemoveShareUrlAPIView, UpdateUserParams, UserFilesListFolder, FileDetailUserAPIView, CountFiles
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -39,19 +38,18 @@ urlpatterns = [
     path('api/v1/', include('djoser.urls.authtoken')),
     path('admin/', admin.site.urls),
     path('file/<int:pk>/', FileDetailAPIView.as_view()),
+    path('file/user/<int:pk>/', FileDetailUserAPIView.as_view()),
     path('file/<int:pk>/share/', ShareUrlAPIView.as_view()),
     path('file/<int:pk>/remove_share/', RemoveShareUrlAPIView.as_view()),
     path('file/download/', download_share),
     path('folder/list/', FilesListFolder.as_view()),
+    path('folder/list/count/', CountFiles.as_view()),
     path('login/', AuthUser.as_view()),
-    path('usersinfo/', UserAllInfo.as_view()),
+    path('folder/user/list/', UserFilesListFolder.as_view()),
     path('user/<int:pk>/', UpdateUserParams.as_view()),
     path('folder/<int:pk>/', FolderApiView.as_view()),
     path('folders/', FoldersListApiView.as_view()),
     path('root_folder/', FileNullFolderApiView.as_view()),
-    # path(r'^auth/login/$',
-    #      obtain_auth_token,
-    #      name='auth_user_login'),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
 

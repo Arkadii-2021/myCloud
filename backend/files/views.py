@@ -11,7 +11,7 @@ from rest_framework.response import Response
 
 from .models import File, Folder
 from .serializers import FileSerializer, UserSerializer, GroupSerializer, FileDetailSerializer, FolderSerializer, \
-    FileShareUrlSerializer, UserChanger
+    FileShareUrlSerializer, UserChanger, UserFileSerializer
 from django.contrib.auth.models import User, Group
 from django.http import FileResponse
 from rest_framework.authtoken.models import Token
@@ -51,6 +51,48 @@ class FileDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         path_to_file = label_file.file
         filename_in_field = str(path_to_file).split('/')[-1]
         ids = request.user.id
+        file_dir = os.getcwd() + '\\files\\storages\\' + str(ids)
+        File.objects.filter(id=self.kwargs['pk']).delete()
+        os.remove(str(file_dir) + '\\' + str(filename_in_field))
+        print('Удалён файл: ' + str(filename_in_field))
+        logging.info('Удалён файл: ' + str(filename_in_field))
+        return self.destroy(request, *args, **kwargs)
+
+
+class FileDetailUserAPIView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = FileDetailSerializer
+    authentication_classes = (BasicAuthentication, SessionAuthentication,)
+    queryset = File.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        logging.info(f"Выбран файл: {File.objects.get(id=self.kwargs['pk'])}")
+        print(f"Выбран файл: {File.objects.get(id=self.kwargs['pk'])}")
+        return self.retrieve(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        user_list = request.GET.get('user_list')
+        find_username = User.objects.get(username=user_list)
+        old_label_file = File.objects.get(id=self.kwargs['pk'])
+        path_to_file = old_label_file.file
+        filename_in_field = str(path_to_file).split('/')[-1]
+        self.update(request, *args, **kwargs)
+        instance = File.objects.get(id=self.kwargs['pk'])
+        file_dir = f"{os.getcwd()}\\files\\storages"
+        ids = find_username.id
+        os.rename(f'{file_dir}\\{ids}\\{filename_in_field}', f'{file_dir}\\{ids}\\{instance}')
+        instance.file.name = f"files/storages/{ids}/{request.data['label']}"
+        instance.save()
+        logging.info(f"Имя файла: [{filename_in_field}] обновлено на: [{request.data['label']}]")
+        print(f"Имя файла: [{filename_in_field}] обновлено на: [{request.data['label']}]")
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        user_list = request.GET.get('user_list')
+        find_username = User.objects.get(username=user_list)
+        label_file = File.objects.get(id=self.kwargs['pk'])
+        path_to_file = label_file.file
+        filename_in_field = str(path_to_file).split('/')[-1]
+        ids = find_username.id
         file_dir = os.getcwd() + '\\files\\storages\\' + str(ids)
         File.objects.filter(id=self.kwargs['pk']).delete()
         os.remove(str(file_dir) + '\\' + str(filename_in_field))
@@ -123,6 +165,28 @@ class FilesListFolder(generics.ListCreateAPIView):
         return self.create(request, *args, **kwargs)
 
 
+class UserFilesListFolder(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+    authentication_classes = (BasicAuthentication, SessionAuthentication,)
+    queryset = File.objects.all()
+    serializer_class = UserFileSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def get_queryset(self, *args, **kwargs):
+        username_storage = self.request.GET.get('username')
+        req_user_name = User.objects.get(username=username_storage)
+        logging.info(f'Обзор списка файлов пользователя: [{username_storage}]')
+        print(f'Обзор списка файлов пользователя: "{username_storage}"')
+        return self.queryset.filter(user=req_user_name)
+
+    def post(self, request, *args, **kwargs):
+        req_user_name = User.objects.get(username=self.request.user)
+        instance = User.objects.get(username=req_user_name)
+        return self.create(request, *args, **kwargs)
+
+
 class AuthUser(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
     authentication_classes = (BasicAuthentication, SessionAuthentication,)
@@ -130,6 +194,7 @@ class AuthUser(generics.ListAPIView):
     serializer_class = UserSerializer
 
     def get(self, request, *args, **kwargs):
+        quantity_files = len(File.objects.filter(user=self.request.user))
         req_user_name = User.objects.get(username=self.request.user)
         timezone.make_aware(datetime.datetime.now(),
                             timezone=timezone.get_current_timezone())
@@ -152,7 +217,8 @@ class AuthUser(generics.ListAPIView):
                                                     "lastName": req_user_name.last_name,
                                                     "email": req_user_name.email,
                                                     "lastLogin": req_user_name.last_login,
-                                                    "userId": request.user.id},
+                                                    "userId": request.user.id,
+                                                    "quantityFiles": quantity_files},
                          "allUsers": ""}
 
         if req_user_name:
@@ -166,22 +232,15 @@ class AuthUser(generics.ListAPIView):
                 return Response(is_admin_user)
 
 
-class UserAllInfo(generics.ListAPIView):
+class CountFiles(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
     authentication_classes = (BasicAuthentication, SessionAuthentication,)
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
     def get(self, request, *args, **kwargs):
-        all_users = [users for users in User.objects.values("id",
-                                                            "username",
-                                                            "last_login",
-                                                            "email",
-                                                            "is_superuser",
-                                                            "is_active",
-                                                            "first_name",
-                                                            "last_name", )]
-        return Response({"allUsers": all_users})
+        quantity_files = len(File.objects.filter(user=self.request.user))
+        return Response({"count_files": quantity_files})
 
 
 class UpdateUserParams(generics.RetrieveUpdateDestroyAPIView):

@@ -2,10 +2,10 @@ import { useDispatch } from "react-redux";
 import { toast } from 'react-toastify';
 import React, { useState } from 'react';
 import axios from 'axios';
-import { newList } from "../../slices/listSlice";
+import { newUserList } from "../../slices/userlistSlice";
 
 
-export default function ModalContent({ isfileName, isfileComment, ids, folderId, newLoginUser, setModal }) {
+export default function ModalUserContent({ isfileName, isfileComment, ids, folderId, newLoginUser, setModal, userNameList }) {
 	const dispatch = useDispatch();
 	const [error, setError] = useState('');
 	const [userData, setUserData] = useState({filename: "", comment: ""});
@@ -18,7 +18,7 @@ export default function ModalContent({ isfileName, isfileComment, ids, folderId,
 	const onSignupRenameFileClick = (evt) => {
 		evt.preventDefault();
 		
-		axios.put(`${process.env.REACT_APP_SERVER_URL}file/${ids}/`, {
+		axios.put(`${process.env.REACT_APP_SERVER_URL}file/user/${ids}/?user_list=${userNameList}`, {
 			"label": userData.filename || isfileName,
 			"comment": userData.comment || isfileComment,
 			"folder": folderId
@@ -48,14 +48,14 @@ export default function ModalContent({ isfileName, isfileComment, ids, folderId,
     let pageNumber = localStorage.getItem('pageNum');
 		
     const updatePageListFiles = () => {
-			axios.get(`http://127.0.0.1:8000/folder/list/${pageNumber}`, 
+			axios.get(`http://127.0.0.1:8000/folder/user/list/${pageNumber}&username=${userNameList}`, 
 		  {
 			auth: {username: newLoginUser['value'].user, password: newLoginUser['value'].password},
 			headers: { "Content-Type": "application/json" }
 		  })
 			.then(response => {
 			  setError('');
-			  dispatch(newList(response.data.results));
+			  dispatch(newUserList(response.data.results));
 		  })
 			.catch(error => {
 			  setError(error.response.data.message);
